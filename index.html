@@ -23,6 +23,7 @@ it is: pedro@brisa.is 👍👍👍
         overflow: hidden;
         font-family: sans-serif;
         font-size: 0.9rem;
+        transition: background-color 0.5s ease;
       }
 
       a {
@@ -150,285 +151,285 @@ it is: pedro@brisa.is 👍👍👍
       </div>
     </div>
 
-  <script>
-    const container = document.querySelector('#container');
-    const patternInput = document.querySelector('#pattern');
-    const fontSizeInput = document.querySelector('#font-size');
-    const fontColorInput = document.querySelector('#font-color');
-    const bgColorInput = document.querySelector('#bg-color');
-    const rotationInput = document.querySelector('#rotation');
-    const lineHeightInput = document.querySelector('#line-height');
-    const letterSpacingInput = document.querySelector('#letter-spacing');
-    const fontFamilyInput = document.querySelector('#font-family');
-    const spicyInput = document.querySelector('#spicy');
-    const satisfyInput = document.querySelector('#satisfy');
-    const randomizeBtn = document.querySelector('#randomize');
-    const previousBtn = document.querySelector('#go-back');
-    const nextBtn = document.querySelector('#go-forward');
-    const toggleControlsBtn = document.querySelector('#toggle-controls');
+    <script>
+      const container = document.querySelector('#container');
+      const patternInput = document.querySelector('#pattern');
+      const fontSizeInput = document.querySelector('#font-size');
+      const fontColorInput = document.querySelector('#font-color');
+      const bgColorInput = document.querySelector('#bg-color');
+      const rotationInput = document.querySelector('#rotation');
+      const lineHeightInput = document.querySelector('#line-height');
+      const letterSpacingInput = document.querySelector('#letter-spacing');
+      const fontFamilyInput = document.querySelector('#font-family');
+      const spicyInput = document.querySelector('#spicy');
+      const satisfyInput = document.querySelector('#satisfy');
+      const randomizeBtn = document.querySelector('#randomize');
+      const previousBtn = document.querySelector('#go-back');
+      const nextBtn = document.querySelector('#go-forward');
+      const toggleControlsBtn = document.querySelector('#toggle-controls');
 
-    // Default config
-    let config = {
-      linePattern: '_._.—.—.',
-      fontSize: 30,
-      color: '#ffd700',
-      backgroundColor: '#0a0a0a',
-      rotation: 45,
-      lineHeight: 1,
-      fontFamily: 'Shadows Into Light',
-      letterSpacing: 4,
-      spicy: true
-    }
-
-    let history = [];
-    let currentHistory = 0;
-
-    // Define listeners actions
-    const listeners = [
-      [patternInput, 'linePattern'],
-      [fontSizeInput, 'fontSize'],
-      [fontColorInput, 'color'],
-      [bgColorInput, 'backgroundColor'],
-      [rotationInput, 'rotation'],
-      [lineHeightInput, 'lineHeight'],
-      [letterSpacingInput, 'letterSpacing'],
-      [fontFamilyInput, 'fontFamily'],
-      [spicyInput, 'spicy'],
-      [satisfyInput, 'satisfy']
-    ];
-
-    // Transform HSL color to HEX
-    // From https://stackoverflow.com/a/44134328
-    function hslToHex(h, s, l) {
-      l /= 100;
-      const a = s * Math.min(l, 1 - l) / 100;
-      const f = n => {
-        const k = (n + h / 30) % 12;
-        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
-      };
-      return `#${f(0)}${f(8)}${f(4)}`;
-    }
-
-
-    // Push current pattern to history
-    function pushToHistory() {
-      history.push({...config})
-      currentHistory = history.length - 1;
-    }
-
-    function goTo(historyIndex) {
-      config = {...history[historyIndex]}
-      draw();
-    }
-
-    function goBack() {
-      currentHistory--;
-
-      if (currentHistory < 0) {
-        currentHistory = 0;
-        return;
+      // Default config
+      let config = {
+        linePattern: '_._.—.—.',
+        fontSize: 30,
+        color: '#ffd700',
+        backgroundColor: '#0a0a0a',
+        rotation: 45,
+        lineHeight: 1,
+        fontFamily: 'Shadows Into Light',
+        letterSpacing: 4,
+        spicy: true
       }
 
-      goTo(currentHistory);
-    }
+      let history = [];
+      let currentHistory = 0;
 
-    function goForward() {
-      currentHistory++;
+      // Define listeners actions
+      const listeners = [
+        [patternInput, 'linePattern'],
+        [fontSizeInput, 'fontSize'],
+        [fontColorInput, 'color'],
+        [bgColorInput, 'backgroundColor'],
+        [rotationInput, 'rotation'],
+        [lineHeightInput, 'lineHeight'],
+        [letterSpacingInput, 'letterSpacing'],
+        [fontFamilyInput, 'fontFamily'],
+        [spicyInput, 'spicy'],
+        [satisfyInput, 'satisfy']
+      ];
 
-      if (currentHistory > history.length - 1) {
-        randomize();
-        draw()
-        return;
-      }
-
-      goTo(currentHistory);
-    }
-
-    // Update inputs
-    function updateInputs() {
-      for (listener of listeners) {
-        const [inputEl, configKey] = listener;
-        if (inputEl.type === 'checkbox') {
-          inputEl.checked = config[configKey];
-        } else {
-          inputEl.value = config[configKey];
-        }
-      }
-    }
-
-    // Get a random number between a mininum and maximum value
-    function getRandomInRange(min, max) {
-      return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    // Get a random HSL value, with lightness tone control
-    function getRandomColor(lightnessMode) {
-      const lightness = lightnessMode === 'dark' ? getRandomInRange(5, 20) : getRandomInRange(50, 80);
-      return hslToHex(getRandomInRange(0, 255), getRandomInRange(0, 100), lightness);
-    }
-
-    // // Get a random gradient
-    // function getRandomGradient(lightnessMode) {
-    //   const hue = getRandomInRange(0, 255);
-    //   const saturation = getRandomInRange(0, 100);
-    //   const color1 = hslToHex(hue, saturation, getRandomInRange(5, 15));
-    //   const color2 = hslToHex(hue, saturation, getRandomInRange(25, 30));
-
-    //   return `linear-gradient(30deg, ${color1}, ${color2}`;
-    // }
-
-    // Get a string with random patterns to compose a pattern
-    function getRandomPattern() {
-      const allowedChars = '_*+.:,;ö~^´`      ';
-      const charsLength = allowedChars.length;
-      return [...Array(getRandomInRange(2,4))].map(()=>allowedChars[getRandomInRange(0, charsLength - 1)]).join('');
-    }
-
-    // Chagne the container contents
-    function draw () {
-      container.style.fontSize = config.fontSize + 'px';
-      container.style.color = config.color;
-
-      container.style.backgroundColor = config.backgroundColor;
-      document.body.style.backgroundColor = config.backgroundColor;
-      // container.style.backgroundImage = config.backgroundColor; // Use gradient in the future?
-
-      container.style.transform = `rotate(${config.rotation}deg) scale(2.5)`;
-      container.style.letterSpacing = config.letterSpacing + 'px';
-      container.style.lineHeight = config.lineHeight / 10;
-      container.style.fontFamily = config.fontFamily;
-
-      container.innerHTML = '';
-      if (config.spicy || config.satisfy) {
-        const fullStr = config.linePattern.repeat(500);
-        const chars = fullStr.split('')
-        const content = chars.map(char => {
-          const el = document.createElement('span');
-          el.style.display = `inline-block`;
-
-          if (config.spicy) {
-            el.style.transform = `rotate(${[0, 45][getRandomInRange(0, 2)]}deg)`;
-          }
-
-          el.innerHTML = char;
-          container.appendChild(el);
-        })
-      } else {
-        container.innerHTML = config.linePattern.repeat(500);
+      // Transform HSL color to HEX
+      // From https://stackoverflow.com/a/44134328
+      function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+          const k = (n + h / 30) % 12;
+          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+          return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
       }
 
 
-      updateInputs();
-    }
-
-    // Randomize all parameters :)
-    function randomize(options) {
-      if (!options) options = {};
-
-      const backgroundColor = getRandomColor('dark');
-      // const backgroundColor = getRandomGradient();
-      const color = getRandomColor('light');
-      const fontSize = getRandomInRange(70, 100);
-      const linePattern = getRandomPattern();
-      const rotation = [0, 45, 90, 135][getRandomInRange(0, 5)];
-      const lineHeight = getRandomInRange(10, 15);
-      const letterSpacing = [30, 60][getRandomInRange(0, 2)];
-
-      let fontFamily;
-      if (options.skipFontRand) {
-        fontFamily = config.fontFamily;
-      } else {
-        fontFamily = ['Major Mono Display',
-                          'Shadows Into Light',
-                          'Syne Mono',
-                          'VT323'][getRandomInRange(0, 5)];
+      // Push current pattern to history
+      function pushToHistory() {
+        history.push({...config})
+        currentHistory = history.length - 1;
       }
 
-
-      config = { ...config, backgroundColor, color, fontSize, linePattern, rotation, lineHeight, letterSpacing, fontFamily };
-
-      updateInputs();
-      pushToHistory();
-    }
-
-    // Initilize
-    function init() {
-      randomize();
-      draw();
-
-      function vai() {
-        const options = {
-          skipFontRand: true
-        }
-        randomize(options);
+      function goTo(historyIndex) {
+        config = {...history[historyIndex]}
         draw();
       }
 
-      // Initialize the app showcasing a few examples
-      let count = 0;
-      const presentationInt = setInterval(function() {
-        count ++;
-        vai();
-        if (count > 10) clearInterval(presentationInt)
-      }, 200);
+      function goBack() {
+        currentHistory--;
 
+        if (currentHistory < 0) {
+          currentHistory = 0;
+          return;
+        }
 
-      // Setup input listeners
-      for (listener of listeners) {
-        const [inputEl, configKey] = listener;
+        goTo(currentHistory);
+      }
 
-        // Draw whenever the user alters the input
-        inputEl.addEventListener('input', function(e) {
-          if (e.target.type === 'checkbox') {
-            config[configKey] = inputEl.checked;
+      function goForward() {
+        currentHistory++;
+
+        if (currentHistory > history.length - 1) {
+          randomize();
+          draw()
+          return;
+        }
+
+        goTo(currentHistory);
+      }
+
+      // Update inputs
+      function updateInputs() {
+        for (listener of listeners) {
+          const [inputEl, configKey] = listener;
+          if (inputEl.type === 'checkbox') {
+            inputEl.checked = config[configKey];
           } else {
-            config[configKey] = inputEl.value;
+            inputEl.value = config[configKey];
           }
+        }
+      }
+
+      // Get a random number between a mininum and maximum value
+      function getRandomInRange(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+
+      // Get a random HSL value, with lightness tone control
+      function getRandomColor(lightnessMode) {
+        const lightness = lightnessMode === 'dark' ? getRandomInRange(5, 20) : getRandomInRange(50, 80);
+        return hslToHex(getRandomInRange(0, 255), getRandomInRange(0, 100), lightness);
+      }
+
+      // // Get a random gradient
+      // function getRandomGradient(lightnessMode) {
+      //   const hue = getRandomInRange(0, 255);
+      //   const saturation = getRandomInRange(0, 100);
+      //   const color1 = hslToHex(hue, saturation, getRandomInRange(5, 15));
+      //   const color2 = hslToHex(hue, saturation, getRandomInRange(25, 30));
+
+      //   return `linear-gradient(30deg, ${color1}, ${color2}`;
+      // }
+
+      // Get a string with random patterns to compose a pattern
+      function getRandomPattern() {
+        const allowedChars = '_*+.:,;ö~^´`      ';
+        const charsLength = allowedChars.length;
+        return [...Array(getRandomInRange(2,4))].map(()=>allowedChars[getRandomInRange(0, charsLength - 1)]).join('');
+      }
+
+      // Chagne the container contents
+      function draw () {
+        container.style.fontSize = config.fontSize + 'px';
+        container.style.color = config.color;
+
+        container.style.backgroundColor = config.backgroundColor;
+        document.body.style.backgroundColor = config.backgroundColor;
+        // container.style.backgroundImage = config.backgroundColor; // Use gradient in the future?
+
+        container.style.transform = `rotate(${config.rotation}deg) scale(2.5)`;
+        container.style.letterSpacing = config.letterSpacing + 'px';
+        container.style.lineHeight = config.lineHeight / 10;
+        container.style.fontFamily = config.fontFamily;
+
+        container.innerHTML = '';
+        if (config.spicy || config.satisfy) {
+          const fullStr = config.linePattern.repeat(500);
+          const chars = fullStr.split('')
+          const content = chars.map(char => {
+            const el = document.createElement('span');
+            el.style.display = `inline-block`;
+
+            if (config.spicy) {
+              el.style.transform = `rotate(${[0, 45][getRandomInRange(0, 2)]}deg)`;
+            }
+
+            el.innerHTML = char;
+            container.appendChild(el);
+          })
+        } else {
+          container.innerHTML = config.linePattern.repeat(500);
+        }
+
+
+        updateInputs();
+      }
+
+      // Randomize all parameters :)
+      function randomize(options) {
+        if (!options) options = {};
+
+        const backgroundColor = getRandomColor('dark');
+        // const backgroundColor = getRandomGradient();
+        const color = getRandomColor('light');
+        const fontSize = getRandomInRange(70, 100);
+        const linePattern = getRandomPattern();
+        const rotation = [0, 45, 90, 135][getRandomInRange(0, 5)];
+        const lineHeight = getRandomInRange(10, 15);
+        const letterSpacing = [30, 60][getRandomInRange(0, 2)];
+
+        let fontFamily;
+        if (options.skipFontRand) {
+          fontFamily = config.fontFamily;
+        } else {
+          fontFamily = ['Major Mono Display',
+                            'Shadows Into Light',
+                            'Syne Mono',
+                            'VT323'][getRandomInRange(0, 5)];
+        }
+
+
+        config = { ...config, backgroundColor, color, fontSize, linePattern, rotation, lineHeight, letterSpacing, fontFamily };
+
+        updateInputs();
+        pushToHistory();
+      }
+
+      // Initilize
+      function init() {
+        randomize();
+        draw();
+
+        function vai() {
+          const options = {
+            skipFontRand: true
+          }
+          randomize(options);
+          draw();
+        }
+
+        // Initialize the app showcasing a few examples
+        let count = 0;
+        const presentationInt = setInterval(function() {
+          count ++;
+          vai();
+          if (count > 10) clearInterval(presentationInt)
+        }, 200);
+
+
+        // Setup input listeners
+        for (listener of listeners) {
+          const [inputEl, configKey] = listener;
+
+          // Draw whenever the user alters the input
+          inputEl.addEventListener('input', function(e) {
+            if (e.target.type === 'checkbox') {
+              config[configKey] = inputEl.checked;
+            } else {
+              config[configKey] = inputEl.value;
+            }
+            draw();
+          });
+
+          // ONly push to history once the change is done
+          inputEl.addEventListener('change', function(e) {
+            pushToHistory();
+          });
+        }
+
+        // Randomize button listener
+        randomizeBtn.addEventListener('click', function(e) {
+          randomize();
           draw();
         });
 
-        // ONly push to history once the change is done
-        inputEl.addEventListener('change', function(e) {
-          pushToHistory();
+        // Make cLicking the container on mobile randomize
+        container.addEventListener('click', function(e) {
+          // Mobile only
+          // if (window.innerWidth > 1024) return;
+
+          randomize();
+          draw();
+        });
+
+        // History button listeners
+        previousBtn.addEventListener('click', function(e) {
+          goBack();
+        });
+        nextBtn.addEventListener('click', function(e) {
+          goForward();
+        });
+
+        // Controls visibility
+        toggleControlsBtn.addEventListener('click', function(e) {
+          e.target.parentNode.classList.toggle('hide');
+        });
+
+        // Satisfy input
+        satisfyInput.addEventListener('click', function(e) {
+          container.classList.toggle('satisfy');
         });
       }
 
-      // Randomize button listener
-      randomizeBtn.addEventListener('click', function(e) {
-        randomize();
-        draw();
-      });
-
-      // Make cLicking the container on mobile randomize
-      container.addEventListener('click', function(e) {
-        // Mobile only
-        // if (window.innerWidth > 1024) return;
-
-        randomize();
-        draw();
-      });
-
-      // History button listeners
-      previousBtn.addEventListener('click', function(e) {
-        goBack();
-      });
-      nextBtn.addEventListener('click', function(e) {
-        goForward();
-      });
-
-      // Controls visibility
-      toggleControlsBtn.addEventListener('click', function(e) {
-        e.target.parentNode.classList.toggle('hide');
-      });
-
-      // Satisfy input
-      satisfyInput.addEventListener('click', function(e) {
-        container.classList.toggle('satisfy');
-      });
-    }
-
-    init();
+      init();
     </script>
   </body>
 </html>
