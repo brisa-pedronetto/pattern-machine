@@ -22,7 +22,7 @@ it is: pedro@brisa.is 👍👍👍
         background-color: #0a0a0a;
         overflow: hidden;
         font-family: sans-serif;
-        font-size: 1rem;
+        font-size: 0.9rem;
       }
 
       a {
@@ -50,6 +50,22 @@ it is: pedro@brisa.is 👍👍👍
         user-select: none;
       }
 
+      #container.satisfy span {
+        animation: satisfy 10s infinite linear;
+      }
+
+      @keyframes satisfy {
+        0% {
+          transform: scale(0.75) rotate(0deg);
+        }
+        50% {
+          transform: scale(1.25) rotate(180deg);
+        }
+        100% {
+          transform: scale(0.75) rotate(360deg);
+        }
+      }
+
       #controls {
         position: fixed;
         bottom: 0.5rem;
@@ -58,6 +74,11 @@ it is: pedro@brisa.is 👍👍👍
         padding: 1rem;
         border-radius: 4px;
         color: white;
+      }
+
+      #controls .title {
+        font-family: 'VT323';
+        font-size: 1.5rem;
       }
 
       #controls > button {
@@ -93,8 +114,13 @@ it is: pedro@brisa.is 👍👍👍
       <button id="toggle-controls">👇</button>
 
       <div>
+        <h1 class="title">pattern machine</h1>
+
         <div>
-          <input id="spicy" type="checkbox" /> Spicy
+          <input id="spicy" type="checkbox" /> <label for="spicy">Spicy</label>
+        </div>
+        <div>
+          <input id="satisfy" type="checkbox" /> <label for="satisfy">Satisfy me</label>
         </div>
         <select id="font-family">
           <option value="Shadows Into Light">Shadows Into Light</option>
@@ -105,9 +131,11 @@ it is: pedro@brisa.is 👍👍👍
         <input id="letter-spacing" type="range" min="10" max="100" /> <!-- Will be divided by 10 -->
         <input id="line-height" type="range" min="10" max="15" /> <!-- Will be divided by 10 -->
         <input id="rotation" type="range" min="0" max="365" step="10" />
-        <input id="bg-color" type="color"/>
-        <input id="font-color" type="color"/>
         <input id="font-size" type="range" min="70" max="100" />
+        <div>
+          <input id="bg-color" type="color"/>
+          <input id="font-color" type="color"/>
+        </div>
         <input id="pattern" />
         <div>
           <button id="go-back">Previous</button>
@@ -122,7 +150,7 @@ it is: pedro@brisa.is 👍👍👍
       </div>
     </div>
 
-    <script>
+  <script>
     const container = document.querySelector('#container');
     const patternInput = document.querySelector('#pattern');
     const fontSizeInput = document.querySelector('#font-size');
@@ -133,6 +161,7 @@ it is: pedro@brisa.is 👍👍👍
     const letterSpacingInput = document.querySelector('#letter-spacing');
     const fontFamilyInput = document.querySelector('#font-family');
     const spicyInput = document.querySelector('#spicy');
+    const satisfyInput = document.querySelector('#satisfy');
     const randomizeBtn = document.querySelector('#randomize');
     const previousBtn = document.querySelector('#go-back');
     const nextBtn = document.querySelector('#go-forward');
@@ -148,7 +177,7 @@ it is: pedro@brisa.is 👍👍👍
       lineHeight: 1,
       fontFamily: 'Shadows Into Light',
       letterSpacing: 4,
-      spicy: false
+      spicy: true
     }
 
     let history = [];
@@ -165,6 +194,7 @@ it is: pedro@brisa.is 👍👍👍
       [letterSpacingInput, 'letterSpacing'],
       [fontFamilyInput, 'fontFamily'],
       [spicyInput, 'spicy'],
+      [satisfyInput, 'satisfy']
     ];
 
     // Transform HSL color to HEX
@@ -233,10 +263,20 @@ it is: pedro@brisa.is 👍👍👍
     }
 
     // Get a random HSL value, with lightness tone control
-    function getRandomColor(lightnessMod) {
-      const lightness = lightnessMod === 'dark' ? getRandomInRange(5, 20) : getRandomInRange(50, 80);
+    function getRandomColor(lightnessMode) {
+      const lightness = lightnessMode === 'dark' ? getRandomInRange(5, 20) : getRandomInRange(50, 80);
       return hslToHex(getRandomInRange(0, 255), getRandomInRange(0, 100), lightness);
     }
+
+    // // Get a random gradient
+    // function getRandomGradient(lightnessMode) {
+    //   const hue = getRandomInRange(0, 255);
+    //   const saturation = getRandomInRange(0, 100);
+    //   const color1 = hslToHex(hue, saturation, getRandomInRange(5, 15));
+    //   const color2 = hslToHex(hue, saturation, getRandomInRange(25, 30));
+
+    //   return `linear-gradient(30deg, ${color1}, ${color2}`;
+    // }
 
     // Get a string with random patterns to compose a pattern
     function getRandomPattern() {
@@ -249,21 +289,28 @@ it is: pedro@brisa.is 👍👍👍
     function draw () {
       container.style.fontSize = config.fontSize + 'px';
       container.style.color = config.color;
+
       container.style.backgroundColor = config.backgroundColor;
       document.body.style.backgroundColor = config.backgroundColor;
+      // container.style.backgroundImage = config.backgroundColor; // Use gradient in the future?
+
       container.style.transform = `rotate(${config.rotation}deg) scale(2.5)`;
       container.style.letterSpacing = config.letterSpacing + 'px';
       container.style.lineHeight = config.lineHeight / 10;
       container.style.fontFamily = config.fontFamily;
 
       container.innerHTML = '';
-      if (config.spicy) {
+      if (config.spicy || config.satisfy) {
         const fullStr = config.linePattern.repeat(500);
         const chars = fullStr.split('')
         const content = chars.map(char => {
           const el = document.createElement('span');
           el.style.display = `inline-block`;
-          el.style.transform = `rotate(${[0, 45][getRandomInRange(0, 2)]}deg)`;
+
+          if (config.spicy) {
+            el.style.transform = `rotate(${[0, 45][getRandomInRange(0, 2)]}deg)`;
+          }
+
           el.innerHTML = char;
           container.appendChild(el);
         })
@@ -280,6 +327,7 @@ it is: pedro@brisa.is 👍👍👍
       if (!options) options = {};
 
       const backgroundColor = getRandomColor('dark');
+      // const backgroundColor = getRandomGradient();
       const color = getRandomColor('light');
       const fontSize = getRandomInRange(70, 100);
       const linePattern = getRandomPattern();
@@ -306,6 +354,9 @@ it is: pedro@brisa.is 👍👍👍
 
     // Initilize
     function init() {
+      randomize();
+      draw();
+
       function vai() {
         const options = {
           skipFontRand: true
@@ -369,6 +420,11 @@ it is: pedro@brisa.is 👍👍👍
       // Controls visibility
       toggleControlsBtn.addEventListener('click', function(e) {
         e.target.parentNode.classList.toggle('hide');
+      });
+
+      // Satisfy input
+      satisfyInput.addEventListener('click', function(e) {
+        container.classList.toggle('satisfy');
       });
     }
 
