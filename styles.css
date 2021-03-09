@@ -70,6 +70,8 @@ audio {
   padding: 1rem;
   border-radius: 4px;
   color: white;
+  max-height: calc(100vh - 3rem);
+  overflow: auto;
 }
 
 #controls .title {

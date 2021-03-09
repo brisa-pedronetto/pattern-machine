@@ -159,7 +159,7 @@ function getRandomGradient(lightnessMode) {
 
 // Get a string with random patterns to compose a pattern
 function getRandomPattern() {
-  const allowedChars = '_!"#%&()*+,-./:;<=>?ƒ„…†‡ˆ‹“”•–—˜›œžŸö~^´``';
+  const allowedChars = '_!"#%&()*+,-./:;<=>?ƒ„…†‡ˆ‹“”•–—˜›œŸö~^´``';
   const charsLength = allowedChars.length;
   return (
     [...Array(getRandomInRange(2, 5))]
