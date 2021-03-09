@@ -6,7 +6,8 @@ it is: pedro@brisa.is 👍👍👍
 
 Credits:
 Pedro Netto / Author / pedro@brisa.is
-Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
+Mike Ivanchyshyn / Rotation and Satisfaction ideation / imvasyl.com
+Chee Basbas / Soundscape consulting
 -->
 <!DOCTYPE html>
 <html>
@@ -50,6 +51,7 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
         transition: color 0.5s ease, background-color 0.5s ease;
         transform: rotate(45deg) scale(2);
         cursor: pointer;
+        perspective: 500px;
 
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -59,8 +61,12 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
         user-select: none;
       }
 
-      #container.satisfy span {
-        animation: satisfy 10s infinite linear;
+      #container.satisfy > span.right {
+        animation: satisfy 15s infinite linear;
+      }
+
+      #container.satisfy > span.left {
+        animation: satisfy 15s reverse infinite linear;
       }
 
       @keyframes satisfy {
@@ -68,7 +74,7 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
           transform: scale(0.75) rotate(0deg);
         }
         50% {
-          transform: scale(1.25) rotate(180deg);
+          transform: scale(1.1) rotate(180deg);
         }
         100% {
           transform: scale(0.75) rotate(360deg);
@@ -137,10 +143,10 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
           <option value="Syne Mono">Syne Mono</option>
           <option value="VT323">VT323</option>
         </select>
-        <input id="letter-spacing" type="range" min="10" max="100" /> <!-- Will be divided by 10 -->
-        <input id="line-height" type="range" min="10" max="15" /> <!-- Will be divided by 10 -->
-        <input id="rotation" type="range" min="0" max="365" step="10" />
-        <input id="font-size" type="range" min="70" max="100" />
+        <label>FS</label> <input id="font-size" type="range" min="30" max="100" />
+        <label>LS</label><input id="letter-spacing" type="range" min="10" max="100" /> <!-- Will be divided by 10 -->
+        <label>LN</label><input id="line-height" type="range" min="10" max="15" /> <!-- Will be divided by 10 -->
+        <label>RT</label><input id="rotation" type="range" min="0" max="365" step="10" />
         <div>
           <input id="bg-color" type="color"/>
           <input id="font-color" type="color"/>
@@ -151,6 +157,8 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
           <button id="go-forward">Next</button>
           <button id="randomize">Shazam!</button>
         </div>
+
+        <audio id="audio" src="./atmospheric_sounds.mp3" />
 
         <div>
           <a href="https://github.com/brisa-pedronetto/pattern-machine" target="_blank">Github</a>
@@ -175,6 +183,7 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
       const previousBtn = document.querySelector('#go-back');
       const nextBtn = document.querySelector('#go-forward');
       const toggleControlsBtn = document.querySelector('#toggle-controls');
+      const audio = document.querySelector('#audio');
 
       // Default config
       let config = {
@@ -289,9 +298,9 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
 
       // Get a string with random patterns to compose a pattern
       function getRandomPattern() {
-        const allowedChars = '_*+.:,;ö~^´`      ';
+        const allowedChars = '_*+.:,;ö~^´`';
         const charsLength = allowedChars.length;
-        return [...Array(getRandomInRange(2,4))].map(()=>allowedChars[getRandomInRange(0, charsLength - 1)]).join('');
+        return [...Array(getRandomInRange(2,4))].map(()=>allowedChars[getRandomInRange(0, charsLength - 1)]).join('') + ' ';
       }
 
       // Chagne the container contents
@@ -313,15 +322,30 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
           const fullStr = config.linePattern.repeat(500);
           const chars = fullStr.split('')
           const content = chars.map(char => {
-            const el = document.createElement('span');
-            el.style.display = `inline-block`;
+            const wrapperEl = document.createElement('span');
+            wrapperEl.style.display = `inline-block`;
+
+            // For more satisfaction, randomize the rotation direction
+            wrapperEl.classList.add(['right', 'left'][getRandomInRange(0, 2)]);
 
             if (config.spicy) {
-              el.style.transform = `rotate(${[0, 45][getRandomInRange(0, 2)]}deg)`;
+              // If spicy rotate it
+              const spicyEl = document.createElement("span");
+              spicyEl.style.display = `inline-block`;
+              spicyEl.style.transform = `rotateZ(${[0, 45, 90, 135][getRandomInRange(0, 4)]}deg)`;
+              spicyEl.innerHTML = char;
+              wrapperEl.appendChild(spicyEl);
+            } else {
+              wrapperEl.innerHTML = char;
             }
 
-            el.innerHTML = char;
-            container.appendChild(el);
+            if (config.satisfy) {
+              audio.play();
+            } else {
+              audio.pause();
+            }
+
+            container.appendChild(wrapperEl);
           })
         } else {
           container.innerHTML = config.linePattern.repeat(500);
@@ -338,7 +362,7 @@ Mike Ivanchyshyn / Rotation and Satisfaction controls ideation / imvasyl.com
         const backgroundColor = getRandomColor('dark');
         // const backgroundColor = getRandomGradient();
         const color = getRandomColor('light');
-        const fontSize = getRandomInRange(70, 100);
+        const fontSize = getRandomInRange(30, 100);
         const linePattern = getRandomPattern();
         const rotation = [0, 45, 90, 135][getRandomInRange(0, 5)];
         const lineHeight = getRandomInRange(10, 15);
