@@ -1,4 +1,5 @@
 const container = document.querySelector("#container");
+
 const patternInput = document.querySelector("#pattern");
 const fontSizeInput = document.querySelector("#font-size");
 const fontColorInput = document.querySelector("#font-color");
@@ -9,6 +10,8 @@ const letterSpacingInput = document.querySelector("#letter-spacing");
 const fontFamilyInput = document.querySelector("#font-family");
 const spicyInput = document.querySelector("#spicy");
 const satisfyInput = document.querySelector("#satisfy");
+const colorizeInput = document.querySelector("#colorize");
+
 const randomizeBtn = document.querySelector("#randomize");
 const previousBtn = document.querySelector("#go-back");
 const nextBtn = document.querySelector("#go-forward");
@@ -54,12 +57,13 @@ const listeners = [
   [fontFamilyInput, "fontFamily"],
   [spicyInput, "spicy"],
   [satisfyInput, "satisfy"],
+  [colorizeInput, "colorize"],
 ];
 
 // Min/max values according to device type
 // Ensures a better experience
 const rangeInputsValues = {
-  fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [30, 100] }],
+  fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [30, 80] }],
   letterSpacing: [letterSpacingInput, { mobile: [10, 50], desktop: [10, 100] }], // px, will be divided by 10
   lineHeight: [lineHeightInput, { mobile: [10, 13], desktop: [10, 15] }], // Will be divided by 10
 };
@@ -184,16 +188,17 @@ function draw() {
   if (config.spicy || config.satisfy || config.colorize) {
     const fullStr = config.linePattern.repeat(500);
     const chars = fullStr.split("");
+
     chars.forEach((char) => {
       const wrapperEl = document.createElement("span");
       wrapperEl.style.display = `inline-block`;
 
-      // For more satisfaction, randomize the rotation direction
-      wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 2)]);
-
       // Add some CSS animations and
       // play a nice song to go along 🎹
       if (config.satisfy) {
+        // For more satisfaction, randomize the rotation direction
+        wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 2)]);
+
         container.classList.add("satisfy");
         audio.play();
       } else {
@@ -201,20 +206,19 @@ function draw() {
         audio.pause();
       }
 
-      let randomBgColors;
       let randomColors;
       if (config.colorize) {
         // Random colors!
-        randomBgColors = setInterval(() => {
-          container.style.backgroundColor = getRandomColor("dark");
-        }, 5000);
+        const transitionDuration = [500, 700, 1200][getRandomInRange(0, 3)]; // ms
+        wrapperEl.style.color = getRandomColor();
+        wrapperEl.style.transition = `color ${transitionDuration}ms linear`;
 
         randomColors = setInterval(() => {
           wrapperEl.style.color = getRandomColor();
-        }, [500, 1200, 1800, 2400][getRandomInRange(0, 5)]);
+        }, transitionDuration);
       } else {
-        clearInterval(randomBgColors);
         clearInterval(randomColors);
+        wrapperEl.style.transition = null;
       }
 
       if (config.spicy) {
