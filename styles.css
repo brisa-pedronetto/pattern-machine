@@ -1,0 +1,102 @@
+body {
+  background-color: #0a0a0a;
+  overflow: hidden;
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  transition: background-color 0.5s ease;
+}
+
+a {
+  color: white !important;
+}
+
+button {
+  cursor: pointer;
+}
+
+audio {
+  position: absolute;
+  z-index: -1;
+  visibility: hidden;
+}
+
+#container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  font-family: monospace;
+  line-break: anywhere;
+  /* text-shadow: 3px 3px 15px black; Future? */
+  transition: color 0.5s ease, background-color 0.5s ease;
+  transform: rotate(45deg) scale(2) translateY(50%);
+  cursor: pointer;
+  perspective: 500px;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#container.satisfy > span.right {
+  animation: satisfy 15s infinite linear;
+}
+
+#container.satisfy > span.left {
+  animation: satisfy 15s reverse infinite linear;
+}
+
+@keyframes satisfy {
+  0% {
+    transform: scale(0.75) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(180deg);
+  }
+  100% {
+    transform: scale(0.75) rotate(360deg);
+  }
+}
+
+#controls {
+  position: fixed;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1rem;
+  border-radius: 4px;
+  color: white;
+}
+
+#controls .title {
+  font-family: "VT323";
+  font-size: 1.5rem;
+}
+
+#controls > button {
+  display: block;
+  margin-left: auto;
+}
+
+#controls.hide {
+  padding: 0;
+}
+
+#controls.hide > button {
+  transform: rotate(180deg);
+}
+
+#controls.hide > div {
+  display: none;
+}
+
+#controls input:not([type="checkbox"]),
+#controls select,
+#controls div {
+  display: block;
+  margin-bottom: 0.75rem;
+}
