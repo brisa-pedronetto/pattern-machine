@@ -29,9 +29,9 @@ This is a silly experiment to create nice patterns out of simple characters. Liv
 
 ## Credits:
 
-Pedro Netto / Author / pedro@brisa.is
-Mike Ivanchyshyn / Rotation and Satisfaction ideation / imvasyl.com
-Chee / Soundscape consulting, rubber duck 🦆
+- Pedro Netto / Author / pedro@brisa.is
+- Mike Ivanchyshyn / Rotation and Satisfaction ideation / imvasyl.com
+- Chee / Soundscape consulting, rubber duck 🦆
 
 ## License?
 
