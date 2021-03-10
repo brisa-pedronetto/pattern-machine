@@ -10,6 +10,7 @@ const rotationInput = document.querySelector("#rotation");
 const lineHeightInput = document.querySelector("#line-height");
 const letterSpacingInput = document.querySelector("#letter-spacing");
 const fontFamilyInput = document.querySelector("#font-family");
+const packsInput = document.querySelector("#packs");
 const spicyInput = document.querySelector("#spicy");
 const satisfyInput = document.querySelector("#satisfy");
 const colorizeInput = document.querySelector("#colorize");
@@ -18,9 +19,8 @@ const randomizeBtn = document.querySelector("#randomize");
 const optionsBtn = document.querySelector("#options");
 const historyBtn = document.querySelector("#history");
 const toggleControlsBtn = document.querySelector("#toggle-controls");
-const audio = document.querySelector("#audio");
 
-let currentMenu = "";
+const audio = document.querySelector("#audio");
 
 // Default config (examples)
 let config = {
@@ -34,14 +34,29 @@ let config = {
   letterSpacing: 4,
   spicy: true,
   satisfy: false,
+  activePack: "Pointy",
 };
 
+// Thanks Google Fonts
 const availableFonts = [
   "Major Mono Display",
   "Shadows Into Light",
   "Syne Mono",
   "VT323",
 ];
+
+const availablePacks = {
+  Pointy: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´`` ',
+  Curvy: "&().?ƒ„ˆ‹“”•›œ?ö~^º ",
+  Greek: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
+  Arkitekt: "╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌",
+  Checked: "░▒▓",
+  Phat: "█▄▌▐▀",
+  CheckedPhats: "░▒▓█▄▌▐▀",
+};
+
+// Keeps track of the menu page being displayed
+let currentMenu = "";
 
 // Keeps track of the patterns generated during
 // the session and the current history "page"
@@ -59,6 +74,7 @@ const listeners = [
   [lineHeightInput, "lineHeight"],
   [letterSpacingInput, "letterSpacing"],
   [fontFamilyInput, "fontFamily"],
+  [packsInput, "activePack"],
   [spicyInput, "spicy"],
   [satisfyInput, "satisfy"],
   [colorizeInput, "colorize"],
@@ -161,33 +177,17 @@ function pushToHistory() {
   if (currentMenu === "history") updateHistoryView();
 }
 
-function goTo(historyIndex) {
-  const historicConfig = history[historyIndex];
-  config = { ...historicConfig };
-  draw();
-  updateHistoryHash();
-}
+// Navigate menu pages
+function goToMenu(activeMenu) {
+  // Clear active state
+  const menuEls = controls.querySelectorAll(".menu-item");
+  menuEls.forEach((menuEl) => menuEl.classList.remove("active"));
 
-function goBack() {
-  currentHistory--;
+  if (activeMenu === "history") updateHistoryView();
+  currentMenu = activeMenu;
 
-  if (currentHistory < 0) {
-    currentHistory = 0;
-    return;
-  }
-
-  goTo(currentHistory);
-}
-
-function goForward() {
-  currentHistory++;
-
-  if (currentHistory > history.length - 1) {
-    currentHistory = history.length - 1;
-    return;
-  }
-
-  goTo(currentHistory);
+  const activeEl = controls.querySelector("." + activeMenu);
+  activeEl.classList.add("active");
 }
 
 // Update inputs
@@ -200,6 +200,11 @@ function updateInputs() {
       inputEl.value = config[configKey];
     }
   }
+}
+
+// Check wether this is a mobile device
+function isMobile() {
+  return window.innerWidth <= 1024;
 }
 
 // Get a random number between a mininum and maximum value
@@ -220,7 +225,7 @@ function getRandomColor(lightnessMode) {
   );
 }
 
-/* Future implementation
+/* Future implementation (gradients)
 // Get a random gradient
 function getRandomGradient(lightnessMode) {
   const hue = getRandomInRange(0, 255);
@@ -233,7 +238,12 @@ function getRandomGradient(lightnessMode) {
 
 // Get a string with random patterns to compose a pattern
 function getRandomPattern() {
-  const allowedChars = '_!"#&()*+,-./:;<=>?ƒ„…†‡ˆ‹“”•–—˜›œö~^´`` ';
+  console.log("config", config);
+  allowedChars =
+    availablePacks[
+      config.activePack ? config.activePack : Object.keys(availablePacks)[0]
+    ];
+
   const charsLength = allowedChars.length;
   return [...Array(getRandomInRange(2, 5))]
     .map(() => allowedChars[getRandomInRange(0, charsLength - 1)])
@@ -327,11 +337,6 @@ function draw(customContainer, customConfig) {
   updateInputs();
 }
 
-// Check wether this is a mobile device
-function isMobile() {
-  return window.innerWidth <= 1024;
-}
-
 // Randomize all parameters :)
 function randomize(options) {
   if (!options) options = {};
@@ -365,7 +370,7 @@ function randomize(options) {
   const letterSpacing = getRandomInRange(...letterSpacingRange);
 
   // Container rotation
-  const rotation = [0, 45, 90, 135][getRandomInRange(0, 5)];
+  const rotation = [20, 45, 65, 135, 155][getRandomInRange(0, 6)];
 
   let fontFamily;
   if (options.skipFontRand) {
@@ -411,19 +416,6 @@ function doPresentation() {
       }, 1000);
     }
   }, 200);
-}
-
-// Navigate menu pages
-function goToMenu(activeMenu) {
-  // Clear active state
-  const menuEls = controls.querySelectorAll(".menu-item");
-  menuEls.forEach((menuEl) => menuEl.classList.remove("active"));
-
-  if (activeMenu === "history") updateHistoryView();
-  currentMenu = activeMenu;
-
-  const activeEl = controls.querySelector("." + activeMenu);
-  activeEl.classList.add("active");
 }
 
 // Initialize
@@ -489,7 +481,11 @@ function init() {
 
     // Only push to history once the change is done
     inputEl.addEventListener("change", function (e) {
-      pushToHistory();
+      if (e.target.id === packsInput.id) {
+        randomize();
+      } else {
+        pushToHistory();
+      }
     });
   }
   // Add Google Fonts
@@ -527,6 +523,22 @@ function init() {
     e.target.classList.toggle("rotate");
     controls.classList.toggle("hide");
   });
+
+  // Populate Fonts input
+  for (font of availableFonts) {
+    const option = document.createElement("option");
+    option.value = font;
+    option.innerHTML = font;
+    fontFamilyInput.appendChild(option);
+  }
+
+  // Populate packs input
+  for (packName in availablePacks) {
+    const option = document.createElement("option");
+    option.value = packName;
+    option.innerHTML = packName;
+    packsInput.appendChild(option);
+  }
 }
 
 window.onload = init;
