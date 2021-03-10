@@ -252,7 +252,9 @@ function getRandomPattern() {
 
 // Chagne the container contents
 function draw(customContainer, customConfig) {
+  // Set local Container
   const lContainer = customContainer ? customContainer : container;
+  // Set local Config
   const lConfig = customConfig ? customConfig : config;
 
   lContainer.style.fontSize = lConfig.fontSize + "px";
@@ -286,11 +288,14 @@ function draw(customContainer, customConfig) {
       if (lConfig.satisfy) {
         // For more satisfaction, randomize the rotation direction
         wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 2)]);
+        wrapperEl.style.opacity = "0.7";
 
         lContainer.classList.add("satisfy");
         audio.play();
+        audio.volume = 0.4;
       } else {
         lContainer.classList.remove("satisfy");
+        wrapperEl.style.opacity = null;
         audio.pause();
       }
 
