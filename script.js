@@ -83,15 +83,28 @@ function hslToHex(h, s, l) {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
+// Update the config hash
+function updateHistoryHash() {
+  const configCopy = { ...config };
+  window.location.hash = btoa(encodeURIComponent(JSON.stringify(configCopy)));
+}
+
 // Push current pattern to history
 function pushToHistory() {
+  const maxHistoryLength = 100;
+  history.splice(0, history.length - maxHistoryLength);
+
   history.push({ ...config });
+  localStorage.setItem("patternMachineHistory", JSON.stringify(history));
   currentHistory = history.length - 1;
+  updateHistoryHash();
 }
 
 function goTo(historyIndex) {
-  config = { ...history[historyIndex] };
+  const historicConfig = history[historyIndex];
+  config = { ...historicConfig };
   draw();
+  updateHistoryHash();
 }
 
 function goBack() {
@@ -109,7 +122,7 @@ function goForward() {
   currentHistory++;
 
   if (currentHistory > history.length - 1) {
-    randomize();
+    currentHistory = history.length - 1;
     return;
   }
 
@@ -303,8 +316,8 @@ function randomize(options) {
   };
 
   updateInputs();
-  pushToHistory();
   draw();
+  pushToHistory();
 }
 
 // Showcase a few examples of patterns
@@ -325,8 +338,37 @@ function doPresentation() {
 
 // Initialize
 function init() {
-  // Showcase a few examples of patterns
-  doPresentation();
+  try {
+    const localHistoryStr = localStorage.getItem("patternMachineHistory");
+    if (localHistoryStr) {
+      const historyArr = JSON.parse(localHistoryStr);
+      history = [...historyArr];
+    }
+  } catch {
+    throw "Error on history recovery";
+  }
+
+  if (window.location.hash) {
+    // If a config is available at the start, use it
+    try {
+      const hashValue = window.location.hash.slice(
+        1,
+        window.location.hash.length
+      );
+
+      hashConfig = JSON.parse(decodeURIComponent(atob(hashValue)));
+      config = { ...hashConfig };
+
+      draw();
+      pushToHistory();
+    } catch {
+      doPresentation();
+      throw "Malformed config string";
+    }
+  } else {
+    // Showcase a few examples of patterns
+    doPresentation();
+  }
 
   // Setup the ranges
   function setupRanges() {
