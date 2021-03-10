@@ -67,9 +67,9 @@ const listeners = [
 // Min/max values according to device type
 // Ensures a better experience
 const rangeInputsValues = {
-  fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [30, 80] }],
-  letterSpacing: [letterSpacingInput, { mobile: [10, 50], desktop: [10, 100] }], // px, will be divided by 10
-  lineHeight: [lineHeightInput, { mobile: [10, 13], desktop: [10, 15] }], // Will be divided by 10
+  fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [40, 80] }],
+  letterSpacing: [letterSpacingInput, { mobile: [10, 50], desktop: [30, 100] }], // px, will be divided by 10
+  lineHeight: [lineHeightInput, { mobile: [10, 13], desktop: [12, 15] }], // Will be divided by 10
 };
 
 // Transform HSL color to HEX
@@ -233,13 +233,11 @@ function getRandomGradient(lightnessMode) {
 
 // Get a string with random patterns to compose a pattern
 function getRandomPattern() {
-  const allowedChars = '_!"#&()*+,-./:;<=>?ƒ„…†‡ˆ‹“”•–—˜›œö~^´``';
+  const allowedChars = '_!"#&()*+,-./:;<=>?ƒ„…†‡ˆ‹“”•–—˜›œö~^´`` ';
   const charsLength = allowedChars.length;
-  return (
-    [...Array(getRandomInRange(2, 5))]
-      .map(() => allowedChars[getRandomInRange(0, charsLength - 1)])
-      .join("") + " "
-  );
+  return [...Array(getRandomInRange(2, 5))]
+    .map(() => allowedChars[getRandomInRange(0, charsLength - 1)])
+    .join("");
 }
 
 // Chagne the container contents
@@ -268,7 +266,7 @@ function draw(customContainer, customConfig) {
     const fullStr = lConfig.linePattern.repeat(repeatAmount);
     const chars = fullStr.split("");
 
-    chars.forEach((char) => {
+    chars.forEach((char, charIndex) => {
       const wrapperEl = document.createElement("span");
       wrapperEl.classList.add("char");
       wrapperEl.style.display = `inline-block`;
@@ -305,8 +303,12 @@ function draw(customContainer, customConfig) {
         // Rotate most characters in some direction
         const spicyEl = document.createElement("span");
         spicyEl.style.display = `inline-block`;
+        let rotationIndex = 1;
+        if (charIndex % 3 === 0) rotationIndex = 0;
+        if (charIndex % 5 === 0) rotationIndex = 2;
+        if (charIndex % 7 === 0) rotationIndex = 3;
         spicyEl.style.transform = `rotateZ(${
-          [0, 45, 90, 135][getRandomInRange(0, 4)]
+          [0, 45, 90, 135][rotationIndex]
         }deg)`;
         spicyEl.innerHTML = char;
         wrapperEl.appendChild(spicyEl);
