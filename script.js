@@ -15,8 +15,8 @@ const satisfyInput = document.querySelector("#satisfy");
 const colorizeInput = document.querySelector("#colorize");
 
 const randomizeBtn = document.querySelector("#randomize");
-const previousBtn = document.querySelector("#go-back");
-const nextBtn = document.querySelector("#go-forward");
+const optionsBtn = document.querySelector("#options");
+const historyBtn = document.querySelector("#history");
 const toggleControlsBtn = document.querySelector("#toggle-controls");
 const audio = document.querySelector("#audio");
 
@@ -303,10 +303,12 @@ function draw(customContainer, customConfig) {
         // Rotate most characters in some direction
         const spicyEl = document.createElement("span");
         spicyEl.style.display = `inline-block`;
-        let rotationIndex = 1;
-        if (charIndex % 3 === 0) rotationIndex = 0;
-        if (charIndex % 5 === 0) rotationIndex = 2;
-        if (charIndex % 7 === 0) rotationIndex = 3;
+        spicyEl.style.transition = `transform 0.3s ease`;
+        let rotationIndex;
+        if (charIndex % 4 === 0) rotationIndex = 3;
+        else if (charIndex % 3 === 0) rotationIndex = 2;
+        else if (charIndex % 2 === 0) rotationIndex = 1;
+        else rotationIndex = 0;
         spicyEl.style.transform = `rotateZ(${
           [0, 45, 90, 135][rotationIndex]
         }deg)`;
@@ -401,8 +403,27 @@ function doPresentation() {
     count++;
     randomize(options);
     draw();
-    if (count > 10) clearInterval(presentationInt);
+    if (count > 10) {
+      clearInterval(presentationInt);
+
+      setTimeout(function () {
+        controls.classList.toggle("hide");
+      }, 1000);
+    }
   }, 200);
+}
+
+// Navigate menu pages
+function goToMenu(activeMenu) {
+  // Clear active state
+  const menuEls = controls.querySelectorAll(".menu-item");
+  menuEls.forEach((menuEl) => menuEl.classList.remove("active"));
+
+  if (activeMenu === "history") updateHistoryView();
+  currentMenu = activeMenu;
+
+  const activeEl = controls.querySelector("." + activeMenu);
+  activeEl.classList.add("active");
 }
 
 // Initialize
@@ -429,6 +450,10 @@ function init() {
       config = { ...hashConfig };
       draw();
       pushToHistory();
+
+      setTimeout(function () {
+        controls.classList.toggle("hide");
+      }, 1000);
     } catch {
       doPresentation();
       throw "Malformed config string";
@@ -476,37 +501,31 @@ function init() {
   );
   linkFontsEl.href = `https://fonts.googleapis.com/css2?display=swap${fonts}`;
   document.head.appendChild(linkFontsEl);
+
   // Randomize button listener
   randomizeBtn.addEventListener("click", function (e) {
     randomize();
   });
+
+  // Options button listener
+  optionsBtn.addEventListener("click", function (e) {
+    goToMenu("config");
+  });
+
+  // History button listener
+  historyBtn.addEventListener("click", function (e) {
+    goToMenu("history");
+  });
+
   // Make clicking the container randomize
   container.addEventListener("click", function (e) {
     randomize();
   });
-  // History button listeners
-  previousBtn.addEventListener("click", function (e) {
-    goBack();
-  });
-  nextBtn.addEventListener("click", function (e) {
-    goForward();
-  });
 
   // Controls visibility
   toggleControlsBtn.addEventListener("click", function (e) {
+    e.target.classList.toggle("rotate");
     controls.classList.toggle("hide");
-  });
-
-  controlsMenu.addEventListener("change", function (e) {
-    const activeMenu = e.target.value;
-    const menuEls = controls.querySelectorAll(".menu-item");
-    menuEls.forEach((menuEl) => menuEl.classList.remove("active"));
-
-    if (activeMenu === "history") updateHistoryView();
-    currentMenu = activeMenu;
-
-    const activeEl = controls.querySelector("." + activeMenu);
-    activeEl.classList.add("active");
   });
 }
 

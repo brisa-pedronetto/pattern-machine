@@ -24,20 +24,23 @@ Chee / Soundscape consulting
   <body>
     <div id="container"></div>
 
-    <div id="controls">
-      <button id="toggle-controls">👆</button>
+    <button id="toggle-controls">👉</button>
+
+    <div id="controls" class="hide">
 
       <div class="menu">
         <h1 class="title">pattern machine</h1>
 
-        <select id="controls-menu">
-          <option value="config">Config</option>
-          <option value="history">History</option>
-        </select>
+        <p class="description">click around for fun</p>
+
+        <div class="menu-btns">
+          <button id="randomize">🦄✨</button>
+          <button id="options">Options</button>
+          <button id="history">History</button>
+        </div>
       </div>
 
       <div class="menu-item config active">
-
         <div>
           <input id="spicy" type="checkbox" /> <label for="spicy">Spicy</label>
         </div>
@@ -68,12 +71,6 @@ Chee / Soundscape consulting
         </div>
 
         <input id="pattern" />
-
-        <div>
-          <button id="go-back">Previous</button>
-          <button id="go-forward">Next</button>
-          <button id="randomize">Shazam!</button>
-        </div>
 
         <div>
           <a href="https://github.com/brisa-pedronetto/pattern-machine" target="_blank">Github</a>
