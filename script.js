@@ -1,4 +1,6 @@
 const container = document.querySelector("#container");
+const controls = document.querySelector("#controls");
+const controlsMenu = document.querySelector("#controls-menu");
 
 const patternInput = document.querySelector("#pattern");
 const fontSizeInput = document.querySelector("#font-size");
@@ -17,6 +19,8 @@ const previousBtn = document.querySelector("#go-back");
 const nextBtn = document.querySelector("#go-forward");
 const toggleControlsBtn = document.querySelector("#toggle-controls");
 const audio = document.querySelector("#audio");
+
+let currentMenu = "";
 
 // Default config (examples)
 let config = {
@@ -89,15 +93,72 @@ function updateHistoryHash() {
   window.location.hash = btoa(encodeURIComponent(JSON.stringify(configCopy)));
 }
 
+// Update history view
+function updateHistoryView() {
+  const historyContainer = document.querySelector("#history-container");
+  historyContainer.innerHTML = "";
+
+  const historyCopy = history.slice(0);
+  historyCopy
+    .reverse()
+    .slice(1, 20)
+    .forEach((historyItem) => {
+      const itemEl = document.createElement("div");
+      itemEl.classList.add("item");
+      const innerEl = document.createElement("div");
+      innerEl.classList.add("inner");
+
+      itemEl.addEventListener("click", function () {
+        config = { ...historyItem };
+        draw();
+      });
+
+      const customConfig = { ...historyItem };
+      customConfig.containerScale = 1.5;
+      customConfig.repeatAmount = 30;
+      customConfig.lineHeight = 10;
+      customConfig.letterSpacing = 10;
+      customConfig.fontSize = 30;
+      customConfig.satisfy = false;
+
+      itemEl.appendChild(innerEl);
+      historyContainer.appendChild(itemEl);
+
+      draw(innerEl, customConfig);
+    });
+}
+
 // Push current pattern to history
 function pushToHistory() {
   const maxHistoryLength = 100;
   history.splice(0, history.length - maxHistoryLength);
 
-  history.push({ ...config });
+  // Avoid duplicates
+  const hasDuplicate = history.reduce(function (hasDuplicate, historyItem) {
+    if (hasDuplicate) return true;
+
+    let identicalDatapoints = 0;
+    for (configKey in config) {
+      if (historyItem[configKey] === config[configKey]) {
+        identicalDatapoints++;
+      }
+    }
+
+    // If more than 5 data points (e.g. linePatter, letterSpacing, etc)
+    // are identical, do not push this one to the history
+    if (identicalDatapoints > 5) return true;
+
+    return false;
+  }, false);
+
+  if (hasDuplicate) return;
+
+  history.push({ ...config, satisfy: false });
   localStorage.setItem("patternMachineHistory", JSON.stringify(history));
   currentHistory = history.length - 1;
   updateHistoryHash();
+
+  if (currentMenu === "history") updateHistoryView();
 }
 
 function goTo(historyIndex) {
@@ -182,45 +243,51 @@ function getRandomPattern() {
 }
 
 // Chagne the container contents
-function draw() {
-  container.style.fontSize = config.fontSize + "px";
-  container.style.color = config.color;
+function draw(customContainer, customConfig) {
+  const lContainer = customContainer ? customContainer : container;
+  const lConfig = customConfig ? customConfig : config;
 
-  container.style.backgroundColor = config.backgroundColor;
-  document.body.style.backgroundColor = config.backgroundColor;
-  // container.style.backgroundImage = config.backgroundColor; // Use gradient in the future?
+  lContainer.style.fontSize = lConfig.fontSize + "px";
+  lContainer.style.color = lConfig.color;
 
-  container.style.transform = `rotate(${config.rotation}deg) scale(2.5)`;
-  container.style.letterSpacing = config.letterSpacing + "px";
-  container.style.lineHeight = config.lineHeight / 10;
-  container.style.fontFamily = config.fontFamily;
+  lContainer.style.backgroundColor = lConfig.backgroundColor;
+  lContainer.parentElement.style.backgroundColor = lConfig.backgroundColor;
+  // lContainer.style.backgroundImage = lConfig.backgroundColor; // Use gradient in the future?
 
-  // Clear container
-  container.innerHTML = "";
+  const containerScale = lConfig.containerScale ? lConfig.containerScale : 2.5;
+  lContainer.style.transform = `rotate(${lConfig.rotation}deg) scale(${containerScale})`;
+  lContainer.style.letterSpacing = lConfig.letterSpacing + "px";
+  lContainer.style.lineHeight = lConfig.lineHeight / 10;
+  lContainer.style.fontFamily = lConfig.fontFamily;
 
-  if (config.spicy || config.satisfy || config.colorize) {
-    const fullStr = config.linePattern.repeat(500);
+  // Clear lContainer
+  lContainer.innerHTML = "";
+
+  if (lConfig.spicy || lConfig.satisfy || lConfig.colorize) {
+    const repeatAmount = lConfig.repeatAmount ? lConfig.repeatAmount : 500;
+    const fullStr = lConfig.linePattern.repeat(repeatAmount);
     const chars = fullStr.split("");
 
     chars.forEach((char) => {
       const wrapperEl = document.createElement("span");
+      wrapperEl.classList.add("char");
       wrapperEl.style.display = `inline-block`;
 
       // Add some CSS animations and
       // play a nice song to go along 🎹
-      if (config.satisfy) {
+      if (lConfig.satisfy) {
         // For more satisfaction, randomize the rotation direction
         wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 2)]);
 
-        container.classList.add("satisfy");
+        lContainer.classList.add("satisfy");
         audio.play();
       } else {
-        container.classList.remove("satisfy");
+        lContainer.classList.remove("satisfy");
         audio.pause();
       }
 
       let randomColors;
-      if (config.colorize) {
+      if (lConfig.colorize) {
         // Random colors!
         const transitionDuration = [500, 700, 1200][getRandomInRange(0, 3)]; // ms
         wrapperEl.style.color = getRandomColor();
@@ -234,7 +301,7 @@ function draw() {
         wrapperEl.style.transition = null;
       }
 
-      if (config.spicy) {
+      if (lConfig.spicy) {
         // Rotate most characters in some direction
         const spicyEl = document.createElement("span");
         spicyEl.style.display = `inline-block`;
@@ -247,10 +314,10 @@ function draw() {
         wrapperEl.innerHTML = char;
       }
 
-      container.appendChild(wrapperEl);
+      lContainer.appendChild(wrapperEl);
     });
   } else {
-    container.innerHTML = config.linePattern.repeat(500);
+    lContainer.innerHTML = lConfig.linePattern.repeat(500);
   }
 
   updateInputs();
@@ -338,6 +405,7 @@ function doPresentation() {
 
 // Initialize
 function init() {
+  // Try to recover the history from localStorage
   try {
     const localHistoryStr = localStorage.getItem("patternMachineHistory");
     if (localHistoryStr) {
@@ -348,17 +416,15 @@ function init() {
     throw "Error on history recovery";
   }
 
+  // If a config is available via the hash, use it
   if (window.location.hash) {
-    // If a config is available at the start, use it
     try {
       const hashValue = window.location.hash.slice(
         1,
         window.location.hash.length
       );
-
       hashConfig = JSON.parse(decodeURIComponent(atob(hashValue)));
       config = { ...hashConfig };
-
       draw();
       pushToHistory();
     } catch {
@@ -384,7 +450,6 @@ function init() {
   // Setup input listeners
   for (listener of listeners) {
     const [inputEl, configKey] = listener;
-
     // Draw whenever the user alters the input
     inputEl.addEventListener("input", function (e) {
       if (e.target.type === "checkbox") {
@@ -392,7 +457,6 @@ function init() {
       } else {
         config[configKey] = inputEl.value;
       }
-
       draw();
     });
 
@@ -401,7 +465,6 @@ function init() {
       pushToHistory();
     });
   }
-
   // Add Google Fonts
   const linkFontsEl = document.createElement("link");
   linkFontsEl.rel = "stylesheet";
@@ -411,17 +474,14 @@ function init() {
   );
   linkFontsEl.href = `https://fonts.googleapis.com/css2?display=swap${fonts}`;
   document.head.appendChild(linkFontsEl);
-
   // Randomize button listener
   randomizeBtn.addEventListener("click", function (e) {
     randomize();
   });
-
   // Make clicking the container randomize
   container.addEventListener("click", function (e) {
     randomize();
   });
-
   // History button listeners
   previousBtn.addEventListener("click", function (e) {
     goBack();
@@ -432,7 +492,19 @@ function init() {
 
   // Controls visibility
   toggleControlsBtn.addEventListener("click", function (e) {
-    e.target.parentNode.classList.toggle("hide");
+    controls.classList.toggle("hide");
+  });
+
+  controlsMenu.addEventListener("change", function (e) {
+    const activeMenu = e.target.value;
+    const menuEls = controls.querySelectorAll(".menu-item");
+    menuEls.forEach((menuEl) => menuEl.classList.remove("active"));
+
+    if (activeMenu === "history") updateHistoryView();
+    currentMenu = activeMenu;
+
+    const activeEl = controls.querySelector("." + activeMenu);
+    activeEl.classList.add("active");
   });
 }
 

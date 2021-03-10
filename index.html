@@ -25,10 +25,18 @@ Chee / Soundscape consulting
     <div id="container"></div>
 
     <div id="controls">
-      <button id="toggle-controls">👇</button>
+      <button id="toggle-controls">👆</button>
 
-      <div>
+      <div class="menu">
         <h1 class="title">pattern machine</h1>
+
+        <select id="controls-menu">
+          <option value="config">Config</option>
+          <option value="history">History</option>
+        </select>
+      </div>
+
+      <div class="menu-item config active">
 
         <div>
           <input id="spicy" type="checkbox" /> <label for="spicy">Spicy</label>
@@ -74,6 +82,12 @@ Chee / Soundscape consulting
         </div>
 
         <audio id="audio" src="./atmospheric_sounds.mp3" loop/>
+      </div>
+
+      <div id="history-container" class="menu-item history">
+        <!-- <div class="item">
+          <div class="inner"></div>
+        </div> -->
       </div>
     </div>
 
