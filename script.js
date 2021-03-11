@@ -34,7 +34,7 @@ let config = {
   letterSpacing: 4,
   spicy: true,
   satisfy: false,
-  activePack: "Pointy",
+  activePack: "Slim",
 };
 
 // Thanks Google Fonts
@@ -46,9 +46,9 @@ const availableFonts = [
 ];
 
 const availablePacks = {
-  Pointy: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´`` ',
+  Slim: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´`` ',
   Curvy: "&().?ƒ„ˆ‹“”•›œ?ö~^º ",
-  Greek: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
+  Wise: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
   Arkitekt: "╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌",
   Checked: "░▒▓",
   Phat: "█▄▌▐▀",
