@@ -1,59 +1,24 @@
-const container = document.querySelector("#container");
-const controls = document.querySelector("#controls");
-const controlsMenu = document.querySelector("#controls-menu");
+// DOM elements
+let container,
+  patternInput,
+  fontSizeInput,
+  fontColorInput,
+  bgColorInput,
+  rotationInput,
+  lineHeightInput,
+  letterSpacingInput,
+  fontFamilyInput,
+  packsInput,
+  spicyInput,
+  satisfyInput,
+  randomizeBtn,
+  optionsBtn,
+  historyBtn,
+  toggleControlsBtn,
+  audio;
 
-const patternInput = document.querySelector("#pattern");
-const fontSizeInput = document.querySelector("#font-size");
-const fontColorInput = document.querySelector("#font-color");
-const bgColorInput = document.querySelector("#bg-color");
-const rotationInput = document.querySelector("#rotation");
-const lineHeightInput = document.querySelector("#line-height");
-const letterSpacingInput = document.querySelector("#letter-spacing");
-const fontFamilyInput = document.querySelector("#font-family");
-const packsInput = document.querySelector("#packs");
-const spicyInput = document.querySelector("#spicy");
-const satisfyInput = document.querySelector("#satisfy");
-const colorizeInput = document.querySelector("#colorize");
-
-const randomizeBtn = document.querySelector("#randomize");
-const optionsBtn = document.querySelector("#options");
-const historyBtn = document.querySelector("#history");
-const toggleControlsBtn = document.querySelector("#toggle-controls");
-
-const audio = document.querySelector("#audio");
-
-// Default config (examples)
-let config = {
-  linePattern: "_._.—.—.",
-  fontSize: 30,
-  color: "#ffd700",
-  backgroundColor: "#0a0a0a",
-  rotation: 45,
-  lineHeight: 1,
-  fontFamily: "Shadows Into Light",
-  letterSpacing: 4,
-  spicy: true,
-  satisfy: false,
-  activePack: "Slim",
-};
-
-// Thanks Google Fonts
-const availableFonts = [
-  "Major Mono Display",
-  "Shadows Into Light",
-  "Syne Mono",
-  "VT323",
-];
-
-const availablePacks = {
-  Slim: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´`` ',
-  Curvy: "&().?ƒ„ˆ‹“”•›œ?ö~^º ",
-  Wise: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
-  Arkitekt: "╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌",
-  Checked: "░▒▓",
-  Phat: "█▄▌▐▀",
-  CheckedPhats: "░▒▓█▄▌▐▀",
-};
+// Configuration
+let config, availableFonts, availablePacks, rangeInputsValues, listeners;
 
 // Keeps track of the menu page being displayed
 let currentMenu = "";
@@ -62,31 +27,6 @@ let currentMenu = "";
 // the session and the current history "page"
 let history = [];
 let currentHistory = 0;
-
-// Define listeners actions
-// [<inputEl>, <config prop to change with the new value>]
-const listeners = [
-  [patternInput, "linePattern"],
-  [fontSizeInput, "fontSize"],
-  [fontColorInput, "color"],
-  [bgColorInput, "backgroundColor"],
-  [rotationInput, "rotation"],
-  [lineHeightInput, "lineHeight"],
-  [letterSpacingInput, "letterSpacing"],
-  [fontFamilyInput, "fontFamily"],
-  [packsInput, "activePack"],
-  [spicyInput, "spicy"],
-  [satisfyInput, "satisfy"],
-  [colorizeInput, "colorize"],
-];
-
-// Min/max values according to device type
-// Ensures a better experience
-const rangeInputsValues = {
-  fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [40, 80] }],
-  letterSpacing: [letterSpacingInput, { mobile: [10, 50], desktop: [30, 100] }], // px, will be divided by 10
-  lineHeight: [lineHeightInput, { mobile: [10, 13], desktop: [12, 15] }], // Will be divided by 10
-};
 
 // Transform HSL color to HEX
 // From https://stackoverflow.com/a/44134328
@@ -146,6 +86,7 @@ function updateHistoryView() {
 
 // Push current pattern to history
 function pushToHistory() {
+  console.log("historu");
   const maxHistoryLength = 100;
   history.splice(0, history.length - maxHistoryLength);
 
@@ -209,7 +150,7 @@ function isMobile() {
 
 // Get a random number between a mininum and maximum value
 function getRandomInRange(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Get a random HSL value, with lightness tone control
@@ -238,14 +179,13 @@ function getRandomGradient(lightnessMode) {
 
 // Get a string with random patterns to compose a pattern
 function getRandomPattern() {
-  console.log("config", config);
   allowedChars =
     availablePacks[
       config.activePack ? config.activePack : Object.keys(availablePacks)[0]
     ];
 
   const charsLength = allowedChars.length;
-  return [...Array(getRandomInRange(2, 5))]
+  return [...Array(getRandomInRange(2, 4))]
     .map(() => allowedChars[getRandomInRange(0, charsLength - 1)])
     .join("");
 }
@@ -287,7 +227,7 @@ function draw(customContainer, customConfig) {
       // play a nice song to go along 🎹
       if (lConfig.satisfy) {
         // For more satisfaction, randomize the rotation direction
-        wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 2)]);
+        wrapperEl.classList.add(["right", "left"][getRandomInRange(0, 1)]);
         wrapperEl.style.opacity = "0.7";
 
         lContainer.classList.add("satisfy");
@@ -302,7 +242,7 @@ function draw(customContainer, customConfig) {
       let randomColors;
       if (lConfig.colorize) {
         // Random colors!
-        const transitionDuration = [500, 700, 1200][getRandomInRange(0, 3)]; // ms
+        const transitionDuration = [500, 700, 1200][getRandomInRange(0, 2)]; // ms
         wrapperEl.style.color = getRandomColor();
         wrapperEl.style.transition = `color ${transitionDuration}ms linear`;
 
@@ -315,19 +255,36 @@ function draw(customContainer, customConfig) {
       }
 
       if (lConfig.spicy) {
-        // Rotate most characters in some direction
+        // Get a nice big pot
         const spicyEl = document.createElement("span");
+
+        // Add the main ingredients
+        spicyEl.innerHTML = char;
+
+        // Do some prepping...
         spicyEl.style.display = `inline-block`;
         spicyEl.style.transition = `transform 0.3s ease`;
+
+        // Add spices 🌶
+
+        // First some rotation
         let rotationIndex;
         if (charIndex % 4 === 0) rotationIndex = 3;
         else if (charIndex % 3 === 0) rotationIndex = 2;
         else if (charIndex % 2 === 0) rotationIndex = 1;
         else rotationIndex = 0;
+
+        // Then a bit of skewing
+        const skewDeg = [15, "-15"][getRandomInRange(0, 1)];
+
+        // Mix everything...
         spicyEl.style.transform = `rotateZ(${
           [0, 45, 90, 135][rotationIndex]
-        }deg)`;
-        spicyEl.innerHTML = char;
+        }deg) rotateY(${
+          [0, 30, "-30"][getRandomInRange(0, 2)]
+        }deg) skew(${skewDeg}deg, ${skewDeg}deg)`;
+
+        // Yum-my
         wrapperEl.appendChild(spicyEl);
       } else {
         wrapperEl.innerHTML = char;
@@ -375,13 +332,13 @@ function randomize(options) {
   const letterSpacing = getRandomInRange(...letterSpacingRange);
 
   // Container rotation
-  const rotation = [20, 45, 65, 135, 155][getRandomInRange(0, 6)];
+  const rotation = [20, 45, 65, 135, 155][getRandomInRange(0, 4)];
 
   let fontFamily;
   if (options.skipFontRand) {
     fontFamily = config.fontFamily;
   } else {
-    fontFamily = availableFonts[getRandomInRange(0, availableFonts.length)];
+    fontFamily = availableFonts[getRandomInRange(0, availableFonts.length - 1)];
   }
 
   config = {
@@ -423,8 +380,43 @@ function doPresentation() {
   }, 200);
 }
 
-// Initialize
-function init() {
+// Setup the ranges
+function setupRanges() {
+  for (const rangeInputType in rangeInputsValues) {
+    const [input, values] = rangeInputsValues[rangeInputType];
+    input.min = isMobile() ? values.mobile[0] : values.desktop[0];
+    input.max = isMobile() ? values.mobile[1] : values.desktop[1];
+  }
+}
+
+// Define DOM Elements
+function defineDOMElements() {
+  container = document.querySelector("#container");
+  controls = document.querySelector("#controls");
+
+  patternInput = document.querySelector("#pattern");
+  fontSizeInput = document.querySelector("#font-size");
+  fontColorInput = document.querySelector("#font-color");
+  bgColorInput = document.querySelector("#bg-color");
+  rotationInput = document.querySelector("#rotation");
+  lineHeightInput = document.querySelector("#line-height");
+  letterSpacingInput = document.querySelector("#letter-spacing");
+  fontFamilyInput = document.querySelector("#font-family");
+  packsInput = document.querySelector("#packs");
+  spicyInput = document.querySelector("#spicy");
+  satisfyInput = document.querySelector("#satisfy");
+  colorizeInput = document.querySelector("#colorize");
+
+  randomizeBtn = document.querySelector("#randomize");
+  optionsBtn = document.querySelector("#options");
+  historyBtn = document.querySelector("#history");
+  toggleControlsBtn = document.querySelector("#toggle-controls");
+
+  audio = document.querySelector("#audio");
+}
+
+// Recover history
+function recoverHistory() {
   // Try to recover the history from localStorage
   try {
     const localHistoryStr = localStorage.getItem("patternMachineHistory");
@@ -435,7 +427,11 @@ function init() {
   } catch {
     throw "Error on history recovery";
   }
+}
 
+// Define what should happen on the first screen
+// (Show presentation or pre-defined pattern)
+function defineFirstScreen() {
   // If a config is available via the hash, use it
   if (window.location.hash) {
     try {
@@ -459,19 +455,12 @@ function init() {
     // Showcase a few examples of patterns
     doPresentation();
   }
+}
 
-  // Setup the ranges
-  function setupRanges() {
-    for (const rangeInputType in rangeInputsValues) {
-      const [input, values] = rangeInputsValues[rangeInputType];
-      input.min = isMobile() ? values.mobile[0] : values.desktop[0];
-      input.max = isMobile() ? values.mobile[1] : values.desktop[1];
-    }
-  }
-  setupRanges();
-  window.addEventListener("resize", setupRanges);
+// Setup the input listeners
+function setupInputListeners() {
+  let drawTimeout;
 
-  // Setup input listeners
   for (listener of listeners) {
     const [inputEl, configKey] = listener;
     // Draw whenever the user alters the input
@@ -481,7 +470,12 @@ function init() {
       } else {
         config[configKey] = inputEl.value;
       }
-      draw();
+
+      // Debounce draw
+      clearTimeout(drawTimeout);
+      drawTimeout = setTimeout(function () {
+        draw();
+      }, 1000);
     });
 
     // Only push to history once the change is done
@@ -493,6 +487,10 @@ function init() {
       }
     });
   }
+}
+
+// Set up the available fonts
+function setupFonts() {
   // Add Google Fonts
   const linkFontsEl = document.createElement("link");
   linkFontsEl.rel = "stylesheet";
@@ -503,6 +501,17 @@ function init() {
   linkFontsEl.href = `https://fonts.googleapis.com/css2?display=swap${fonts}`;
   document.head.appendChild(linkFontsEl);
 
+  // Populate Fonts input
+  for (font of availableFonts) {
+    const option = document.createElement("option");
+    option.value = font;
+    option.innerHTML = font;
+    fontFamilyInput.appendChild(option);
+  }
+}
+
+// Set up the event listeners
+function setupClickEventListeners() {
   // Randomize button listener
   randomizeBtn.addEventListener("click", function (e) {
     randomize();
@@ -528,15 +537,10 @@ function init() {
     e.target.classList.toggle("rotate");
     controls.classList.toggle("hide");
   });
+}
 
-  // Populate Fonts input
-  for (font of availableFonts) {
-    const option = document.createElement("option");
-    option.value = font;
-    option.innerHTML = font;
-    fontFamilyInput.appendChild(option);
-  }
-
+// Populate packs
+function populatePacks() {
   // Populate packs input
   for (packName in availablePacks) {
     const option = document.createElement("option");
@@ -544,6 +548,93 @@ function init() {
     option.innerHTML = packName;
     packsInput.appendChild(option);
   }
+}
+
+// Initialize
+function init() {
+  // Define DOM elements
+  defineDOMElements();
+
+  // Default config (examples)
+  config = {
+    linePattern: "_._.—.—.",
+    fontSize: 30,
+    color: "#ffd700",
+    backgroundColor: "#0a0a0a",
+    rotation: 45,
+    lineHeight: 1,
+    fontFamily: "Shadows Into Light",
+    letterSpacing: 4,
+    spicy: true,
+    satisfy: false,
+    activePack: "Ellegant",
+  };
+
+  // Thanks Google Fonts
+  availableFonts = [
+    "Major Mono Display",
+    "Shadows Into Light",
+    "Syne Mono",
+    "VT323",
+  ];
+
+  availablePacks = {
+    Ellegant: "░░█ ▄ ▌•",
+    Slim: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´``',
+    Curvy: "&().?ƒ„ˆ‹“”•›œ?ö~^º ",
+    Wise: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
+    Arkitekt: "╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌",
+  };
+
+  // Min/max values according to device type
+  // Ensures a better experience
+  rangeInputsValues = {
+    fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [40, 80] }],
+    letterSpacing: [
+      letterSpacingInput,
+      { mobile: [10, 50], desktop: [30, 60] },
+    ], // px, will be divided by 10
+    lineHeight: [lineHeightInput, { mobile: [10, 12], desktop: [11, 15] }], // Will be divided by 10
+  };
+
+  // Define listeners actions
+  // [<inputEl>, <config prop to change with the new value>]
+  listeners = [
+    [patternInput, "linePattern"],
+    [fontSizeInput, "fontSize"],
+    [fontColorInput, "color"],
+    [bgColorInput, "backgroundColor"],
+    [rotationInput, "rotation"],
+    [lineHeightInput, "lineHeight"],
+    [letterSpacingInput, "letterSpacing"],
+    [fontFamilyInput, "fontFamily"],
+    [packsInput, "activePack"],
+    [spicyInput, "spicy"],
+    [satisfyInput, "satisfy"],
+    [colorizeInput, "colorize"],
+  ];
+
+  // Recover history
+  recoverHistory();
+
+  // Setup the ranges
+  setupRanges();
+  window.addEventListener("resize", setupRanges);
+
+  // Set up the input listeners
+  setupInputListeners();
+
+  // Setup the "click" event listeners
+  setupClickEventListeners();
+
+  // Setup the Google fonts
+  setupFonts();
+
+  // Add the available packs to menu
+  populatePacks();
+
+  // Do presentation or show pre-defined pattern
+  defineFirstScreen();
 }
 
 window.onload = init;
