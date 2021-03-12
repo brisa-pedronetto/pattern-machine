@@ -12,6 +12,7 @@ let container,
   spicyInput,
   satisfyInput,
   randomizeBtn,
+  copyUrlBtn,
   optionsBtn,
   historyBtn,
   toggleControlsBtn,
@@ -53,6 +54,14 @@ function updateHistoryHash() {
   window.location.hash = btoa(encodeURIComponent(JSON.stringify(configCopy)));
 }
 
+// Make a shareable URL for the current patter
+function getShareableURL() {
+  const configCopy = { ...config };
+  return (
+    window.location.href + btoa(encodeURIComponent(JSON.stringify(configCopy)))
+  );
+}
+
 // Update history view
 function updateHistoryView() {
   const historyContainer = document.querySelector("#history-container");
@@ -74,7 +83,7 @@ function updateHistoryView() {
       });
 
       const customConfig = { ...historyItem };
-      customConfig.containerScale = 1.5;
+      customConfig.containerScale = 2.5;
       customConfig.repeatAmount = 30;
       customConfig.lineHeight = 10;
       customConfig.letterSpacing = 10;
@@ -86,6 +95,15 @@ function updateHistoryView() {
 
       draw(innerEl, customConfig);
     });
+}
+
+function copyToClipboard(text) {
+  const el = document.createElement("input");
+  el.value = text;
+  el.style = { position: "absolute", opacity: "0" };
+  document.body.appendChild(el), el.select();
+  document.execCommand("copy");
+  document.body.removeChild(el);
 }
 
 // Push current pattern to history
@@ -116,7 +134,6 @@ function pushToHistory() {
   history.push({ ...config, satisfy: false });
   localStorage.setItem("patternMachineHistory", JSON.stringify(history));
   currentHistory = history.length - 1;
-  updateHistoryHash();
 
   if (currentMenu === "history") updateHistoryView();
 }
@@ -188,7 +205,7 @@ function getRandomPattern() {
     ];
 
   const charsLength = allowedChars.length;
-  return [...Array(getRandomInRange(2, 4))]
+  return [...Array(getRandomInRange(2, 5))]
     .map(() => allowedChars[getRandomInRange(0, charsLength - 1)])
     .join("");
 }
@@ -342,6 +359,10 @@ function draw(customContainer, customConfig) {
   }
 
   updateInputs();
+
+  // Clear hash
+  // TODO Find a better place for this
+  window.location.hash = "";
 }
 
 // Randomize all parameters :)
@@ -432,32 +453,6 @@ function setupRanges() {
     input.min = isMobile() ? values.mobile[0] : values.desktop[0];
     input.max = isMobile() ? values.mobile[1] : values.desktop[1];
   }
-}
-
-// Define DOM Elements
-function defineDOMElements() {
-  container = document.querySelector("#container");
-  controls = document.querySelector("#controls");
-
-  patternInput = document.querySelector("#pattern");
-  fontSizeInput = document.querySelector("#font-size");
-  fontColorInput = document.querySelector("#font-color");
-  bgColorInput = document.querySelector("#bg-color");
-  rotationInput = document.querySelector("#rotation");
-  lineHeightInput = document.querySelector("#line-height");
-  letterSpacingInput = document.querySelector("#letter-spacing");
-  fontFamilyInput = document.querySelector("#font-family");
-  packsInput = document.querySelector("#packs");
-  spicyInput = document.querySelector("#spicy");
-  satisfyInput = document.querySelector("#satisfy");
-  colorizeInput = document.querySelector("#colorize");
-
-  randomizeBtn = document.querySelector("#randomize");
-  optionsBtn = document.querySelector("#options");
-  historyBtn = document.querySelector("#history");
-  toggleControlsBtn = document.querySelector("#toggle-controls");
-
-  audio = document.querySelector("#audio");
 }
 
 // Recover history
@@ -577,6 +572,13 @@ function setupClickEventListeners() {
     randomize();
   });
 
+  // Copy URL button
+  copyUrlBtn.addEventListener("click", function (e) {
+    const shareableURL = getShareableURL();
+    copyToClipboard(shareableURL);
+    alert("The link to this pattern has been copied to the clipboard 👍");
+  });
+
   // Controls visibility
   toggleControlsBtn.addEventListener("click", function (e) {
     e.target.classList.toggle("rotate");
@@ -621,11 +623,33 @@ function init() {
     letterSpacing: 4,
     spicy: true,
     satisfy: false,
-    activePack: "Ellegant",
+    activePack: "Favs",
   };
 
   // Define DOM elements
-  defineDOMElements();
+  container = document.querySelector("#container");
+  controls = document.querySelector("#controls");
+
+  patternInput = document.querySelector("#pattern");
+  fontSizeInput = document.querySelector("#font-size");
+  fontColorInput = document.querySelector("#font-color");
+  bgColorInput = document.querySelector("#bg-color");
+  rotationInput = document.querySelector("#rotation");
+  lineHeightInput = document.querySelector("#line-height");
+  letterSpacingInput = document.querySelector("#letter-spacing");
+  fontFamilyInput = document.querySelector("#font-family");
+  packsInput = document.querySelector("#packs");
+  spicyInput = document.querySelector("#spicy");
+  satisfyInput = document.querySelector("#satisfy");
+  colorizeInput = document.querySelector("#colorize");
+
+  randomizeBtn = document.querySelector("#randomize");
+  copyUrlBtn = document.querySelector("#copy-url");
+  optionsBtn = document.querySelector("#options");
+  historyBtn = document.querySelector("#history");
+  toggleControlsBtn = document.querySelector("#toggle-controls");
+
+  audio = document.querySelector("#audio");
 
   // Thanks Google Fonts
   availableFonts = [
@@ -636,7 +660,8 @@ function init() {
   ];
 
   availablePacks = {
-    Ellegant: "░░█ ▄ ▌•",
+    Favs: "░█▄•!=,¦•(ö≈┬",
+    Ellegant: "░░█▄▌•",
     Slim: '_!"#*+,-/¦<=>†‡‹“”–—˜›^´``',
     Curvy: "&().?ƒ„ˆ‹“”•›œ?ö~^º ",
     Wise: "αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙",
@@ -644,14 +669,14 @@ function init() {
   };
 
   // Min/max values according to device type
-  // Ensures a better experience
+  // Ensures a better experience for specific screens
   rangeInputsValues = {
-    fontSize: [fontSizeInput, { mobile: [40, 100], desktop: [60, 130] }],
+    fontSize: [fontSizeInput, { mobile: [40, 100], desktop: [60, 150] }],
     letterSpacing: [
       letterSpacingInput,
-      { mobile: [50, 120], desktop: [70, 140] },
+      { mobile: [50, 100], desktop: [70, 140] },
     ], // px, will be divided by 10
-    lineHeight: [lineHeightInput, { mobile: [11, 20], desktop: [15, 25] }], // Will be divided by 10
+    lineHeight: [lineHeightInput, { mobile: [11, 14], desktop: [15, 25] }], // Will be divided by 10
   };
 
   // Define listeners actions
