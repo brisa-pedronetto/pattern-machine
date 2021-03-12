@@ -28,6 +28,10 @@ let currentMenu = "";
 let history = [];
 let currentHistory = 0;
 
+// Support canvas used to calculate letter width
+const canvas = document.createElement("canvas");
+const canvasContext = canvas.getContext("2d");
+
 // Transform HSL color to HEX
 // From https://stackoverflow.com/a/44134328
 function hslToHex(h, s, l) {
@@ -86,7 +90,6 @@ function updateHistoryView() {
 
 // Push current pattern to history
 function pushToHistory() {
-  console.log("historu");
   const maxHistoryLength = 100;
   history.splice(0, history.length - maxHistoryLength);
 
@@ -204,8 +207,8 @@ function draw(customContainer, customConfig) {
   lContainer.parentElement.style.backgroundColor = lConfig.backgroundColor;
   // lContainer.style.backgroundImage = lConfig.backgroundColor; // Use gradient in the future?
 
-  const containerScale = lConfig.containerScale ? lConfig.containerScale : 2.5;
-  lContainer.style.transform = `rotate(${lConfig.rotation}deg) scale(${containerScale})`;
+  const containerScale = lConfig.containerScale ? lConfig.containerScale : 1;
+  lContainer.style.transform = `translate(-50%, -50%) scale(${containerScale}) rotateZ(${lConfig.rotation}deg)`;
   lContainer.style.letterSpacing = lConfig.letterSpacing + "px";
   lContainer.style.lineHeight = lConfig.lineHeight / 10;
   lContainer.style.fontFamily = lConfig.fontFamily;
@@ -213,15 +216,50 @@ function draw(customContainer, customConfig) {
   // Clear lContainer
   lContainer.innerHTML = "";
 
+  // Calculate line height
+  const lineHeight = (lConfig.lineHeight / 10) * lConfig.fontSize;
+
+  // Calculate average character width for this pattern
+  canvasContext.font = `${lConfig.fontSize}px ${lConfig.fontFamily}`;
+  const charWidthSum = lConfig.linePattern
+    .split("")
+    .reduce(function (sum, char) {
+      const metrics = canvasContext.measureText(char);
+      return metrics.width + sum;
+    }, 0);
+  const charWidth = Math.ceil(
+    charWidthSum / lConfig.linePattern.length + lConfig.letterSpacing
+  );
+
+  // Calculate total number of lines
+  const lineCount = Math.ceil(container.offsetHeight / lineHeight);
+
+  // Calculate how many characters each line will have
+  const charsPerLine = Math.ceil(container.offsetWidth / charWidth);
+
+  // Calculate how many characters the container will have, in total
+  const totalChars = lineCount * charsPerLine;
+
+  // Define amount of time to repeat this pattern in order to fill the container
+  const repeatAmountCalc = Math.ceil(totalChars / lConfig.linePattern.length);
+
   if (lConfig.spicy || lConfig.satisfy || lConfig.colorize) {
-    const repeatAmount = lConfig.repeatAmount ? lConfig.repeatAmount : 500;
+    const repeatAmount = lConfig.repeatAmount
+      ? lConfig.repeatAmount
+      : repeatAmountCalc;
     const fullStr = lConfig.linePattern.repeat(repeatAmount);
     const chars = fullStr.split("");
 
+    const spanTemplate = document.createElement("span");
+    spanTemplate.style.display = `inline-block`;
+
     chars.forEach((char, charIndex) => {
-      const wrapperEl = document.createElement("span");
+      const wrapperEl = spanTemplate.cloneNode();
       wrapperEl.classList.add("char");
-      wrapperEl.style.display = `inline-block`;
+
+      if (char === " ") {
+        wrapperEl.style.width = `${lConfig.fontSize}px`;
+      }
 
       // Add some CSS animations and
       // play a nice song to go along 🎹
@@ -256,7 +294,7 @@ function draw(customContainer, customConfig) {
 
       if (lConfig.spicy) {
         // Get a nice big pot
-        const spicyEl = document.createElement("span");
+        const spicyEl = spanTemplate.cloneNode();
 
         // Add the main ingredients
         spicyEl.innerHTML = char;
@@ -293,7 +331,14 @@ function draw(customContainer, customConfig) {
       lContainer.appendChild(wrapperEl);
     });
   } else {
-    lContainer.innerHTML = lConfig.linePattern.repeat(500);
+    const text = lConfig.linePattern.repeat(repeatAmountCalc);
+    const finalText = text.replace(
+      / /g,
+      `<span style="display:inline-block; width: ${
+        lConfig.fontSize + lConfig.letterSpacing
+      }px"></span>`
+    );
+    lContainer.innerHTML = finalText;
   }
 
   updateInputs();
@@ -446,7 +491,7 @@ function defineFirstScreen() {
 
       setTimeout(function () {
         controls.classList.toggle("hide");
-      }, 1000);
+      }, 200);
     } catch {
       doPresentation();
       throw "Malformed config string";
@@ -550,11 +595,20 @@ function populatePacks() {
   }
 }
 
+// Set up container properties
+function setupContainer() {
+  // Find container hypotenuse length
+  const hypotenuseLength = Math.ceil(
+    Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2))
+  );
+
+  // Use the hypotenuse ot define the container size
+  container.style.width = hypotenuseLength + "px";
+  container.style.height = hypotenuseLength + "px";
+}
+
 // Initialize
 function init() {
-  // Define DOM elements
-  defineDOMElements();
-
   // Default config (examples)
   config = {
     linePattern: "_._.—.—.",
@@ -569,6 +623,9 @@ function init() {
     satisfy: false,
     activePack: "Ellegant",
   };
+
+  // Define DOM elements
+  defineDOMElements();
 
   // Thanks Google Fonts
   availableFonts = [
@@ -589,12 +646,12 @@ function init() {
   // Min/max values according to device type
   // Ensures a better experience
   rangeInputsValues = {
-    fontSize: [fontSizeInput, { mobile: [20, 50], desktop: [40, 80] }],
+    fontSize: [fontSizeInput, { mobile: [40, 100], desktop: [60, 130] }],
     letterSpacing: [
       letterSpacingInput,
-      { mobile: [10, 50], desktop: [30, 60] },
+      { mobile: [50, 120], desktop: [70, 140] },
     ], // px, will be divided by 10
-    lineHeight: [lineHeightInput, { mobile: [10, 12], desktop: [11, 15] }], // Will be divided by 10
+    lineHeight: [lineHeightInput, { mobile: [11, 20], desktop: [15, 25] }], // Will be divided by 10
   };
 
   // Define listeners actions
@@ -617,7 +674,7 @@ function init() {
   // Recover history
   recoverHistory();
 
-  // Setup the ranges
+  // Setup the range inputs values
   setupRanges();
   window.addEventListener("resize", setupRanges);
 
@@ -632,6 +689,10 @@ function init() {
 
   // Add the available packs to menu
   populatePacks();
+
+  // Setup container properties
+  setupContainer();
+  window.addEventListener("resize", setupContainer);
 
   // Do presentation or show pre-defined pattern
   defineFirstScreen();

@@ -41,15 +41,15 @@ audio {
 
 #container {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
   width: 100vw;
   height: 100vh;
   font-family: monospace;
   line-break: anywhere;
   /* text-shadow: 3px 3px 15px black; Future? */
   /* transition: color 0.5s ease, background-color 0.5s ease; */
-  transform: rotate(45deg) scale(2) translateY(50%);
+  transform: translate(-50%, -50%);
   cursor: pointer;
   perspective: 500px;
 
